@@ -10,7 +10,7 @@ def obtain_data(data_set):
     # Extracting data for each class
     charge_data = train_set_numerical[labels == 'charge']
     transmon_data = train_set_numerical[labels == 'transmon']
-    n_eigenvalues = 3  # for example, calculate the first 5 eigenvalues
+    n_eigenvalues = 4  # for example, calculate the first 5 eigenvalues
     # Lists to store input features (E_c and E_j) and corresponding eigenvalues
     x_data = []
     y_data = []
@@ -29,14 +29,14 @@ def obtain_data(data_set):
 
         # Calculate the first n eigenvalues
         eigenvalues = transmon.eigenvals(evals_count=n_eigenvalues)
-
+        eigenvalues = np.diff(eigenvalues)
         # Append the input features and corresponding eigenvalues to the lists
         x_data.append([E_c, E_j])
         y_data.append(eigenvalues)
 
     # Convert lists to numpy arrays for easier handling in ML models
-    x_data = np.array(x_data)
-    y_data = np.array(y_data)
+    x_data = np.array(x_data)/2/np.pi
+    y_data = np.array(y_data)/2/np.pi
     # x_data and y_data are now ready to be used for training a neural network
     return x_data,y_data
 X_train,  y_train = obtain_data(train_set)

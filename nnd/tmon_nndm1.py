@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
+import torch.optim.lr_scheduler as lr_scheduler
 import pandas as pd
 import numpy as np
 
@@ -12,7 +13,6 @@ import numpy as np
 train_df = pd.read_csv('train_data.csv')
 valid_df = pd.read_csv('valid_data.csv')
 test_df = pd.read_csv('test_data.csv')
-
 # Assuming the last 3 columns are the y_data (eigenvalues)
 # and the first 2 columns are the X_data (features)
 
@@ -49,19 +49,19 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size)
 class MLP(nn.Module):
     def __init__(self):
         super(MLP, self).__init__()
-        self.fc1 = nn.Linear(2, 100)  # Assuming 2 input features
-        self.fc2 = nn.Linear(100, 100)
-        self.fc3 = nn.Linear(100, 3)  # Assuming 3 output values
+        self.fc1 = nn.Linear(2, 10)  # Assuming 2 input features
+        self.fc2 = nn.Linear(10, 10)
+        self.fc3 = nn.Linear(10, 3)  # Assuming 3 output values
 
     def forward(self, x):
-        x = torch.sigmoid(self.fc1(x))  # Logistic activation
-        x = torch.sigmoid(self.fc2(x))
+        x = torch.tanh(self.fc1(x))  # Logistic activation
+        x = torch.tanh(self.fc2(x))
         return self.fc3(x)
 
 model = MLP()
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+scheduler = lr_scheduler.StepLR(optimizer, step_size=400, gamma=0.5)
 # Training Loop
 num_epochs = 3000  # You can adjust this
 best_valid_loss = float('inf')
@@ -74,7 +74,7 @@ for epoch in range(num_epochs):
         loss = criterion(y_pred, y_batch)
         loss.backward()
         optimizer.step()
-
+    scheduler.step()  # Update the learning rate
     # Validation
     model.eval()
     with torch.no_grad():
